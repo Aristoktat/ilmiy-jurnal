@@ -1,9 +1,8 @@
-FROM php:8.2-apache
+FROM php:8.1-apache
 
-# Cache bust - bu qator o'zgarsa, Docker qaytadan qurishga majbur bo'ladi
-ARG CACHE_BUST=20240217
+ARG CACHE_BUST=20240217-v3
 
-# Paketlarni o'rnatish (libicu-dev va boshqalar)
+# 1. Tizim paketlarini o'rnatish
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
@@ -21,20 +20,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# PHP kengaytmalarini sozlash va o'rnatish
+# 2. PHP Ext: GD (Rasmlar uchun)
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-configure intl \
-    && docker-php-ext-install -j$(nproc) \
-    gd \
-    mysqli \
-    pdo_mysql \
-    pdo_pgsql \
-    pgsql \
-    xml \
-    mbstring \
-    intl \
-    zip \
-    opcache
+    && docker-php-ext-install gd
+
+# 3. PHP Ext: Baza (MySQL & Postgres)
+RUN docker-php-ext-install mysqli pdo_mysql pdo_pgsql pgsql
+
+# 4. PHP Ext: Boshqalar (Intl, Zip, XML...)
+RUN docker-php-ext-configure intl \
+    && docker-php-ext-install intl \
+    && docker-php-ext-install xml mbstring zip opcache
 
 # Apache modullarini yoqish
 RUN a2enmod rewrite headers
