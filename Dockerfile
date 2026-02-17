@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libonig-dev \
     libpq-dev \
+    libicu-dev \
     git \
     unzip \
     wget \
